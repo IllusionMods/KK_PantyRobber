@@ -135,7 +135,7 @@ namespace KK_PantyRobber
                         {
                             Order = 20
                         }));
-                    GirlReaction = Config.Bind("", "Girl's reaction", true, new ConfigDescription(
+                    GirlReaction = Config.Bind("", "Girl reacts", true, new ConfigDescription(
                         "When you succeed in stealing panties, the girl reacts.", null,
                         new ConfigurationManagerAttributes
                         {
