@@ -37,13 +37,11 @@ namespace KK_PantyRobber
             canvas.sortingOrder = 500;
             (Pane.GetComponent<CanvasGroup>() ?? Pane.AddComponent<CanvasGroup>()).blocksRaycasts = false;
             PantyRobber.Log("DisplayCutIn");
-            PantyRobber.Instance.StartCoroutine(_DisplayCutIn(canvas, mode, frames, firstWait, secondTimer, hoseiX,
-                hoseiY, hoseiZ, secondSound, txDestroy));
+            PantyRobber.Instance.StartCoroutine(_DisplayCutIn(canvas, mode, frames, firstWait, secondTimer, hoseiX, hoseiY, hoseiZ, secondSound, txDestroy));
         }
 
         internal static IEnumerator _DisplayCutIn(Canvas canvas, CutInMode mode, Texture2D[] frames, float firstWait,
-            float secondTimer, float hoseiX, float hoseiY, float hoseiZ, SystemSE secondSound = SystemSE.sel,
-            bool txDestroy = false)
+            float secondTimer, float hoseiX, float hoseiY, float hoseiZ, SystemSE secondSound = SystemSE.sel, bool txDestroy = false)
         {
             PantyRobber.Log("_DisplayCutIn");
             var gameObject = new GameObject();
@@ -56,8 +54,7 @@ namespace KK_PantyRobber
             cutIn.secondSound = secondSound;
             cutIn.frames = frames;
             cutIn.video = CreateRawImage("", gameObject.transform, null);
-            cutIn.video.rectTransform.sizeDelta =
-                new Vector2(Screen.height * (hoseiZ / 100f), Screen.height * (hoseiZ / 100f));
+            cutIn.video.rectTransform.sizeDelta = new Vector2(Screen.height * (hoseiZ / 100f), Screen.height * (hoseiZ / 100f));
             cutIn.hoseiX = Screen.width / 2f * (hoseiX / 100f);
             cutIn.hoseiY = Screen.height / 2f * (hoseiY / 100f);
             PantyRobber.Log($"cutIn.frames.Length={cutIn.frames.Length}");
@@ -128,12 +125,12 @@ namespace KK_PantyRobber
 
         private static RawImage CreateRawImage(string objectName, Transform p, Texture texture)
         {
-            var gameObject2 = DefaultControls.CreateRawImage(resources);
-            gameObject2.name = objectName;
-            gameObject2.transform.SetParent(p, false);
-            var component = gameObject2.GetComponent<RawImage>();
-            component.texture = texture;
-            return component;
+            var imgObj = DefaultControls.CreateRawImage(resources);
+            imgObj.name = objectName;
+            imgObj.transform.SetParent(p, false);
+            var rawImage = imgObj.GetComponent<RawImage>();
+            rawImage.texture = texture;
+            return rawImage;
         }
 
         internal static void firstMode(cutIn cutIn)
@@ -144,58 +141,44 @@ namespace KK_PantyRobber
                 switch (cutIn.mode)
                 {
                     case CutInMode.None:
-                        cutIn.Transform.position = new Vector3(Screen.width + cutIn.Width / 2f + cutIn.hoseiX,
-                            Screen.height / 2 + cutIn.hoseiY);
-                        cutIn.targetPosition = new Vector3(Screen.width / 2 + cutIn.hoseiX,
-                            Screen.height / 2 + cutIn.hoseiY);
+                        cutIn.Transform.position = new Vector3(Screen.width + cutIn.Width / 2f + cutIn.hoseiX, Screen.height / 2 + cutIn.hoseiY);
+                        cutIn.targetPosition = new Vector3(Screen.width / 2 + cutIn.hoseiX, Screen.height / 2 + cutIn.hoseiY);
                         break;
                     case CutInMode.Right2Left:
-                        cutIn.Transform.position = new Vector3(Screen.width + cutIn.Width / 2f + cutIn.hoseiX,
-                            Screen.height / 2 + cutIn.hoseiY);
-                        cutIn.targetPosition = new Vector3(Screen.width / 2 + cutIn.hoseiX,
-                            Screen.height / 2 + cutIn.hoseiY);
+                        cutIn.Transform.position = new Vector3(Screen.width + cutIn.Width / 2f + cutIn.hoseiX, Screen.height / 2 + cutIn.hoseiY);
+                        cutIn.targetPosition = new Vector3(Screen.width / 2 + cutIn.hoseiX, Screen.height / 2 + cutIn.hoseiY);
                         cutIn.alpha = -2f;
                         cutIn.targetAlpha = 1f;
                         break;
                     case CutInMode.Left2Right:
-                        cutIn.Transform.position = new Vector3(-1f * (Screen.width + cutIn.Width / 2f) + cutIn.hoseiX,
-                            Screen.height / 2 + cutIn.hoseiY);
-                        cutIn.targetPosition = new Vector3(Screen.width / 2 + cutIn.hoseiX,
-                            Screen.height / 2 + cutIn.hoseiY);
+                        cutIn.Transform.position = new Vector3(-1f * (Screen.width + cutIn.Width / 2f) + cutIn.hoseiX, Screen.height / 2 + cutIn.hoseiY);
+                        cutIn.targetPosition = new Vector3(Screen.width / 2 + cutIn.hoseiX, Screen.height / 2 + cutIn.hoseiY);
                         cutIn.alpha = -2f;
                         cutIn.targetAlpha = 1f;
                         break;
                     case CutInMode.Top2Down:
-                        cutIn.Transform.position = new Vector3(Screen.width / 2 + cutIn.hoseiX,
-                            Screen.height + cutIn.Height / 2f + cutIn.hoseiY);
-                        cutIn.targetPosition = new Vector3(Screen.width / 2 + cutIn.hoseiX,
-                            Screen.height / 2 + cutIn.hoseiY);
+                        cutIn.Transform.position = new Vector3(Screen.width / 2 + cutIn.hoseiX, Screen.height + cutIn.Height / 2f + cutIn.hoseiY);
+                        cutIn.targetPosition = new Vector3(Screen.width / 2 + cutIn.hoseiX, Screen.height / 2 + cutIn.hoseiY);
                         cutIn.alpha = -2f;
                         cutIn.targetAlpha = 1f;
                         break;
                     case CutInMode.Down2Top:
-                        cutIn.Transform.position = new Vector3(Screen.width / 2 + cutIn.hoseiX,
-                            -1f * (Screen.height + cutIn.Height / 2f) + cutIn.hoseiY);
-                        cutIn.targetPosition = new Vector3(Screen.width / 2 + cutIn.hoseiX,
-                            Screen.height / 2 + cutIn.hoseiY);
+                        cutIn.Transform.position = new Vector3(Screen.width / 2 + cutIn.hoseiX, -1f * (Screen.height + cutIn.Height / 2f) + cutIn.hoseiY);
+                        cutIn.targetPosition = new Vector3(Screen.width / 2 + cutIn.hoseiX, Screen.height / 2 + cutIn.hoseiY);
                         cutIn.alpha = -2f;
                         cutIn.targetAlpha = 1f;
                         break;
                     case CutInMode.Back2Front:
-                        cutIn.Transform.position = new Vector3(Screen.width / 2 + cutIn.hoseiX,
-                            Screen.height / 2 + cutIn.hoseiY, Screen.width / 2);
-                        cutIn.targetPosition = new Vector3(Screen.width / 2 + cutIn.hoseiX,
-                            Screen.height / 2 + cutIn.hoseiY, 0f);
+                        cutIn.Transform.position = new Vector3(Screen.width / 2 + cutIn.hoseiX, Screen.height / 2 + cutIn.hoseiY, Screen.width / 2);
+                        cutIn.targetPosition = new Vector3(Screen.width / 2 + cutIn.hoseiX, Screen.height / 2 + cutIn.hoseiY, 0f);
                         cutIn.Transform.localScale = new Vector3(0.1f, 0.1f);
                         cutIn.targetScale = Vector3.one;
                         cutIn.alpha = -2f;
                         cutIn.targetAlpha = 1f;
                         break;
                     case CutInMode.Front2Back:
-                        cutIn.Transform.position = new Vector3(Screen.width / 2 + cutIn.hoseiX,
-                            Screen.height / 2 + cutIn.hoseiY, Screen.width / 2);
-                        cutIn.targetPosition = new Vector3(Screen.width / 2 + cutIn.hoseiX,
-                            Screen.height / 2 + cutIn.hoseiY, 0f);
+                        cutIn.Transform.position = new Vector3(Screen.width / 2 + cutIn.hoseiX, Screen.height / 2 + cutIn.hoseiY, Screen.width / 2);
+                        cutIn.targetPosition = new Vector3(Screen.width / 2 + cutIn.hoseiX, Screen.height / 2 + cutIn.hoseiY, 0f);
                         cutIn.Transform.localScale = new Vector3(5f, 5f);
                         cutIn.targetScale = Vector3.one;
                         cutIn.alpha = -2f;
@@ -224,46 +207,39 @@ namespace KK_PantyRobber
                             for (var i = 0; i < frames.Length; i++) Object.Destroy(frames[i]);
                             cutIn.frames = null;
                         }
-
                         if (null != cutIn.Transform.parent.gameObject)
                         {
                             PantyRobber.Log("GameObject.Destroy");
                             Object.Destroy(cutIn.Transform.parent.gameObject);
                             cutIn.video = null;
-                            cutIn = null;
                         }
-
                         return true;
                     case CutInMode.Right2Left:
                         cutIn.waitTimer = cutIn.secondTimer;
                         cutIn.alpha = 1f;
                         cutIn.targetAlpha = -2f;
-                        cutIn.targetPosition = new Vector3(0f - cutIn.Width / 2f + cutIn.hoseiX,
-                            Screen.height / 2 + cutIn.hoseiY);
+                        cutIn.targetPosition = new Vector3(0f - cutIn.Width / 2f + cutIn.hoseiX, Screen.height / 2 + cutIn.hoseiY);
                         cutIn.mode = CutInMode.None;
                         break;
                     case CutInMode.Left2Right:
                         cutIn.waitTimer = cutIn.secondTimer;
                         cutIn.alpha = 1f;
                         cutIn.targetAlpha = -2f;
-                        cutIn.targetPosition = new Vector3(Screen.width + cutIn.Width / 2f + cutIn.hoseiX,
-                            Screen.height / 2 + cutIn.hoseiY);
+                        cutIn.targetPosition = new Vector3(Screen.width + cutIn.Width / 2f + cutIn.hoseiX, Screen.height / 2 + cutIn.hoseiY);
                         cutIn.mode = CutInMode.None;
                         break;
                     case CutInMode.Top2Down:
                         cutIn.waitTimer = cutIn.secondTimer;
                         cutIn.alpha = 1f;
                         cutIn.targetAlpha = -2f;
-                        cutIn.targetPosition = new Vector3(Screen.width / 2 + cutIn.hoseiX,
-                            0f - cutIn.Width / 2f + cutIn.hoseiY);
+                        cutIn.targetPosition = new Vector3(Screen.width / 2 + cutIn.hoseiX, 0f - cutIn.Width / 2f + cutIn.hoseiY);
                         cutIn.mode = CutInMode.None;
                         break;
                     case CutInMode.Down2Top:
                         cutIn.waitTimer = cutIn.secondTimer;
                         cutIn.alpha = 1f;
                         cutIn.targetAlpha = -2f;
-                        cutIn.targetPosition = new Vector3(Screen.width / 2 + cutIn.hoseiX,
-                            Screen.height + cutIn.Height / 2f + cutIn.hoseiY);
+                        cutIn.targetPosition = new Vector3(Screen.width / 2 + cutIn.hoseiX, Screen.height + cutIn.Height / 2f + cutIn.hoseiY);
                         cutIn.mode = CutInMode.None;
                         break;
                     case CutInMode.Back2Front:
@@ -271,8 +247,7 @@ namespace KK_PantyRobber
                         cutIn.alpha = 1f;
                         cutIn.targetAlpha = -2f;
                         cutIn.targetScale = new Vector3(5f, 5f);
-                        cutIn.targetPosition = new Vector3(Screen.width / 2 + cutIn.hoseiX,
-                            Screen.height / 2 + cutIn.hoseiY, -Screen.width / 2);
+                        cutIn.targetPosition = new Vector3(Screen.width / 2 + cutIn.hoseiX, Screen.height / 2 + cutIn.hoseiY, -Screen.width / 2);
                         cutIn.mode = CutInMode.None;
                         break;
                     case CutInMode.Front2Back:
@@ -280,8 +255,7 @@ namespace KK_PantyRobber
                         cutIn.alpha = 1f;
                         cutIn.targetAlpha = -2f;
                         cutIn.targetScale = new Vector3(0.1f, 0.1f);
-                        cutIn.targetPosition = new Vector3(Screen.width / 2 + cutIn.hoseiX,
-                            Screen.height / 2 + cutIn.hoseiY, -Screen.width / 2);
+                        cutIn.targetPosition = new Vector3(Screen.width / 2 + cutIn.hoseiX, Screen.height / 2 + cutIn.hoseiY, -Screen.width / 2);
                         cutIn.mode = CutInMode.None;
                         break;
                 }
@@ -297,38 +271,22 @@ namespace KK_PantyRobber
         internal class cutIn
         {
             internal float _alpha;
-
             internal Texture2D[] frames;
-
             internal float framesPerSecond = 10f;
-
             internal float hoseiX;
-
             internal float hoseiY;
             internal CutInMode mode;
-
             internal SystemSE secondSound;
-
             internal float secondTimer;
-
             internal float smoothTime = 0.3f;
-
             internal float targetAlpha;
-
             internal Vector3 targetPosition = Vector3.zero;
-
             internal Vector3 targetScale = Vector3.one;
-
             internal bool txDestroy;
-
             internal Vector3 velocity = Vector3.zero;
-
             internal Vector3 velocity2 = Vector3.zero;
-
             internal float velocityAlpha;
-
             internal RawImage video;
-
             internal float waitTimer;
 
             internal float Width

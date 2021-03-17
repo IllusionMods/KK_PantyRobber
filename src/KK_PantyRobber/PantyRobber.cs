@@ -6,12 +6,13 @@ using ADV;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
-using Extension;
 using Illusion.Game;
+using KKAPI;
 using KKAPI.Chara;
 using KKAPI.MainGame;
 using KKAPI.Maker;
 using KKAPI.Studio;
+using KKAPI.Utilities;
 using Manager;
 using UniRx;
 using UnityEngine;
@@ -21,7 +22,7 @@ using Random = UnityEngine.Random;
 namespace KK_PantyRobber
 {
     [BepInPlugin(GUID, PluginName, Version)]
-    [BepInDependency("marco.kkapi", "1.4")]
+    [BepInDependency(KoikatuAPI.GUID, KoikatuAPI.VersionConst)]
     public class PantyRobber : BaseUnityPlugin
     {
         public enum DefaultOtherSteal_EN
@@ -39,31 +40,18 @@ namespace KK_PantyRobber
         }
 
         public const string GUID = "picolet21.koikatsu.PantyRobber";
-
         public const string PluginName = "PantyRobber";
-
-        public const string PluginNameInternal = "KK_PantyRobber";
-
         public const string Version = "0.2";
 
         internal static PantyRobber Instance;
-
-        internal static bool _isDuringHScene;
-
-        internal static ManualLogSource Logger { get; private set; }
+        internal static new ManualLogSource Logger { get; private set; }
 
         public static ConfigEntry<bool> EnablePantyRobber { get; private set; }
-
         public static ConfigEntry<KeyboardShortcut> StealKey { get; private set; }
-
         public static ConfigEntry<KeyboardShortcut> ResetKey { get; private set; }
-
         public static ConfigEntry<bool> HalfOff { get; private set; }
-
         public static ConfigEntry<bool> GirlReaction { get; private set; }
-
         public static ConfigEntry<bool> AlwaysSuccessful { get; private set; }
-
         public static ConfigEntry<bool> WithoutBottoms { get; private set; }
 
         public static DefaultOtherSteal_EN DefaultOtherSteal => DefaultOtherSteal_EN.DoNotSteal;
@@ -84,94 +72,60 @@ namespace KK_PantyRobber
                 Instance = this;
                 if (Language == 0)
                 {
-                    EnablePantyRobber = Config.Bind("", "ショーツ強奪を有効", true, new ConfigDescription("会話中に、ショーツ強奪を可能にします。",
-                        null, new ConfigurationManagerAttributes
-                        {
-                            Order = 21
-                        }));
-                    StealKey = Config.Bind("", "ショーツ強奪キー", new KeyboardShortcut(KeyCode.Return), new ConfigDescription(
-                        "会話中に、ここで設定したキーを押すと、ショーツ強奪を試みます。", null, new ConfigurationManagerAttributes
-                        {
-                            Order = 20
-                        }));
-                    GirlReaction = Config.Bind("Options", "女の子のリアクション", true, new ConfigDescription(
-                        "ショーツ強奪に成功したとき、女の子がリアクションをします。 今のところ、そのリアクションは胸を触ったときと同じものです。", null,
-                        new ConfigurationManagerAttributes
-                        {
-                            Order = 14
-                        }));
-                    WithoutBottoms = Config.Bind("Options", "ボトムスなしは強奪不可", false, new ConfigDescription(
-                        "ボトムスを履いていない場合は強奪できなくします。", null, new ConfigurationManagerAttributes
-                        {
-                            Order = 13
-                        }));
-                    HalfOff = Config.Bind("Options", "ボトムスを半脱ぎにする", false, new ConfigDescription(
-                        "ショーツ強奪に成功したら、パンストとボトムスを半脱ぎにします。", null, new ConfigurationManagerAttributes
-                        {
-                            Order = 12
-                        }));
-                    AlwaysSuccessful = Config.Bind("Options", "常に強奪成功", false, new ConfigDescription(
-                        "有効にすると、ショーツ強奪に常に成功します。 無効の場合は確率判断となり、処女の場合は失敗しやすく、淫乱なほど成功し易くなります。 \nなお、失敗した場合は女の子が怒ります。", null,
-                        new ConfigurationManagerAttributes
-                        {
-                            Order = 11
-                        }));
-                    ResetKey = Config.Bind("Options", "シナリオリセットキー",
-                        new KeyboardShortcut(KeyCode.Return, KeyCode.LeftControl), new ConfigDescription(
-                            "シナリオをリセットして最初から始めます。スティールレベルもリセットされます。", null, new ConfigurationManagerAttributes
-                            {
-                                Order = 10
-                            }));
+                    EnablePantyRobber = Config.Bind("", "ショーツ強奪を有効", true, new ConfigDescription("会話中に、ショーツ強奪を可能にします。", null, new ConfigurationManagerAttributes { Order = 21 }));
+                    StealKey = Config.Bind("", "ショーツ強奪キー", new KeyboardShortcut(KeyCode.Return), new ConfigDescription("会話中に、ここで設定したキーを押すと、ショーツ強奪を試みます。", null, new ConfigurationManagerAttributes { Order = 20 }));
+                    GirlReaction = Config.Bind("Options", "女の子のリアクション", true, new ConfigDescription("ショーツ強奪に成功したとき、女の子がリアクションをします。 今のところ、そのリアクションは胸を触ったときと同じものです。", null, new ConfigurationManagerAttributes { Order = 14 }));
+                    WithoutBottoms = Config.Bind("Options", "ボトムスなしは強奪不可", false, new ConfigDescription("ボトムスを履いていない場合は強奪できなくします。", null, new ConfigurationManagerAttributes { Order = 13 }));
+                    HalfOff = Config.Bind("Options", "ボトムスを半脱ぎにする", false, new ConfigDescription("ショーツ強奪に成功したら、パンストとボトムスを半脱ぎにします。", null, new ConfigurationManagerAttributes { Order = 12 }));
+                    AlwaysSuccessful = Config.Bind("Options", "常に強奪成功", false, new ConfigDescription("有効にすると、ショーツ強奪に常に成功します。 無効の場合は確率判断となり、処女の場合は失敗しやすく、淫乱なほど成功し易くなります。 \nなお、失敗した場合は女の子が怒ります。", null, new ConfigurationManagerAttributes { Order = 11 }));
+                    ResetKey = Config.Bind("Options", "シナリオリセットキー", new KeyboardShortcut(KeyCode.Return, KeyCode.LeftControl), new ConfigDescription("シナリオをリセットして最初から始めます。スティールレベルもリセットされます。", null, new ConfigurationManagerAttributes { Order = 10 }));
                 }
                 else
                 {
-                    EnablePantyRobber = Config.Bind("", "Enable", true, new ConfigDescription(
-                        "Allows you to snatch panties during a conversation.", null, new ConfigurationManagerAttributes
-                        {
-                            Order = 21
-                        }));
-                    StealKey = Config.Bind("", "Panty robbery key", new KeyboardShortcut(KeyCode.KeypadEnter),
-                        new ConfigDescription("", null, new ConfigurationManagerAttributes
-                        {
-                            Order = 20
-                        }));
-                    GirlReaction = Config.Bind("", "Girl reacts", true, new ConfigDescription(
-                        "When you succeed in stealing panties, the girl reacts.", null,
-                        new ConfigurationManagerAttributes
-                        {
-                            Order = 14
-                        }));
-                    WithoutBottoms = Config.Bind("Options", "No robbery without bottoms", false, new ConfigDescription(
-                        "If you don't wear bottoms, you won't be able to rob.", null, new ConfigurationManagerAttributes
-                        {
-                            Order = 13
-                        }));
-                    HalfOff = Config.Bind("", "Take off the bottoms halfway", false, new ConfigDescription(
-                        "After successfully robbing the panties, take off the girl's pantyhose and bottoms.", null,
-                        new ConfigurationManagerAttributes
-                        {
-                            Order = 12
-                        }));
-                    AlwaysSuccessful = Config.Bind("", "Always successful in robbing", false, new ConfigDescription(
-                        "When enabled, it will always succeed in robbing panties. Otherwise, it will be a probability judgment. Virgin women are more likely to fail, and the more nasty they are to succeed.\nIf you fail, the girl gets angry.",
-                        null, new ConfigurationManagerAttributes
-                        {
-                            Order = 11
-                        }));
-                    ResetKey = Config.Bind("Options", "Senario reset key",
-                        new KeyboardShortcut(KeyCode.Return, KeyCode.LeftControl), new ConfigDescription(
-                            "Reset the scenario and start from the beginning. The steal level will also be reset.",
-                            null, new ConfigurationManagerAttributes
-                            {
-                                Order = 10
-                            }));
+                    EnablePantyRobber = Config.Bind("", "Enable", true, new ConfigDescription("Allows you to snatch panties during a conversation.", null, new ConfigurationManagerAttributes { Order = 21 }));
+                    StealKey = Config.Bind("", "Panty robbery key", new KeyboardShortcut(KeyCode.Return), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 20 }));
+                    GirlReaction = Config.Bind("", "Girl reacts", true, new ConfigDescription("When you succeed in stealing panties, the girl reacts.", null, new ConfigurationManagerAttributes { Order = 14 }));
+                    WithoutBottoms = Config.Bind("Options", "No robbery without bottoms", false, new ConfigDescription("If you don't wear bottoms, you won't be able to rob.", null, new ConfigurationManagerAttributes { Order = 13 }));
+                    HalfOff = Config.Bind("", "Take off the bottoms halfway", false, new ConfigDescription("After successfully robbing the panties, take off the girl's pantyhose and bottoms.", null, new ConfigurationManagerAttributes { Order = 12 }));
+                    AlwaysSuccessful = Config.Bind("", "Always successful in robbing", false, new ConfigDescription("When enabled, it will always succeed in robbing panties. Otherwise, it will be a probability judgment. Virgin women are more likely to fail, and the more nasty they are to succeed.\nIf you fail, the girl gets angry.", null, new ConfigurationManagerAttributes { Order = 11 }));
+                    ResetKey = Config.Bind("Options", "Senario reset key", new KeyboardShortcut(KeyCode.Return, KeyCode.LeftControl), new ConfigDescription("Reset the scenario and start from the beginning. The steal level will also be reset.", null, new ConfigurationManagerAttributes { Order = 10 }));
                 }
 
                 Logger = base.Logger;
                 Log("PantyRobber Start.");
                 CharacterApi.RegisterExtraBehaviour<PantyRobberCharaController>(GUID);
-                GameAPI.RegisterExtraBehaviour<PantyRobberGameController>(GUID);
+                GameAPI.EndH += (sender, args) =>
+                {
+                    foreach (var item in FindObjectOfType<HSceneProc>().flags.lstHeroine)
+                        StartCoroutine(RefreshOnSceneChangeCo(item));
+                };
                 Hooks.InstallHooks();
+            }
+        }
+
+        private static readonly List<SaveData.Heroine> _noPantyChara = new List<SaveData.Heroine>();
+
+        internal void OnSceneUnload(SaveData.Heroine heroine, ChaControl controller)
+        {
+            if (!StudioAPI.InsideStudio && !MakerAPI.InsideMaker && EnablePantyRobber.Value)
+            {
+                Log("OnSceneUnload");
+                StartCoroutine(RefreshOnSceneChangeCo(heroine));
+            }
+        }
+
+        private static IEnumerator RefreshOnSceneChangeCo(SaveData.Heroine girl)
+        {
+            if (_noPantyChara.Contains(girl))
+            {
+                Log("RefreshOnSceneChangeCo");
+                var previousControl = girl.chaCtrl;
+                yield return new WaitUntil(() => girl.chaCtrl != previousControl && girl.chaCtrl != null);
+                yield return new WaitForEndOfFrame();
+                yield return new WaitForEndOfFrame();
+                _noPantyChara.Remove(girl);
+                Uty.ApplyNoPanty(girl);
+                if (girl.chaCtrl.fileParam.sex == 1) girl.chaCtrl.fileStatus.visibleSonAlways = false; //bug?
             }
         }
 
@@ -187,8 +141,7 @@ namespace KK_PantyRobber
                 list.Add(Program.Transfer.Create(false, Command.FontColor, "Color2", "ちかりん"));
                 list.Add(Program.Transfer.Text("[P名]", "「スティール！」"));
                 list.Add(Program.Transfer.Text("[P名]", "（わっ、本当にできた……）"));
-                list.Add(Program.Transfer.Create(true, Command.SE2DPlay, "sound/data/pcm/c08/adm/00.unity3d",
-                    "adm_00_08_031_04", "0", "0", "TRUE", "TRUE", "-1", "FALSE", "FALSE"));
+                list.Add(Program.Transfer.Create(true, Command.SE2DPlay, "sound/data/pcm/c08/adm/00.unity3d", "adm_00_08_031_04", "0", "0", "TRUE", "TRUE", "-1", "FALSE", "FALSE"));
                 list.Add(Program.Transfer.Text("ちかりん", "（その調子です……もっともっとスティールするのです……）"));
                 list.Add(Program.Transfer.Close());
                 Uty.StartADV(talkScene, list);
@@ -228,7 +181,7 @@ namespace KK_PantyRobber
                         dialogOnly = true;
                         list = new List<Program.Transfer>();
                         Program.SetParam(player, list);
-                        var array = new string[6]
+                        var array = new[]
                         {
                         "adm_00_08_003",
                         "adm_00_08_005",
@@ -237,7 +190,7 @@ namespace KK_PantyRobber
                         "adm_00_08_021",
                         "adm_01_08_004"
                         };
-                        var array2 = new string[4]
+                        var array2 = new[]
                         {
                         "シコってもいいのよ",
                         "嗅いでもいいのよ",
@@ -255,7 +208,7 @@ namespace KK_PantyRobber
             }
 
             _ = actScene.Cycle.nowType;
-            var prevBGM = string.Empty;
+            var prevBgm = string.Empty;
             var prevVolume = 1f;
             if (!dialogOnly)
             {
@@ -266,7 +219,7 @@ namespace KK_PantyRobber
                 actScene.SetProperty("shortcutKey", false);
                 yield return StartCoroutine(Utils.Sound.GetBGMandVolume(delegate (string bgm, float volume)
                 {
-                    prevBGM = bgm;
+                    prevBgm = bgm;
                     prevVolume = volume;
                 }));
                 yield return null;
@@ -285,7 +238,7 @@ namespace KK_PantyRobber
                     position = actScene.cameraTransform.position,
                     rotation = actScene.cameraTransform.rotation
                 };
-            var isOpenADV = false;
+            var isOpenAdv = false;
             yield return StartCoroutine(Program.Open(new Data
             {
                 fadeInTime = 0f,
@@ -297,9 +250,9 @@ namespace KK_PantyRobber
                 transferList = list
             }, new Program.OpenDataProc
             {
-                onLoad = delegate { isOpenADV = true; }
+                onLoad = delegate { isOpenAdv = true; }
             }));
-            yield return new WaitUntil(() => isOpenADV);
+            yield return new WaitUntil(() => isOpenAdv);
             yield return Program.Wait(string.Empty);
             if (!dialogOnly)
             {
@@ -314,7 +267,7 @@ namespace KK_PantyRobber
                 yield return new WaitUntil(() => actScene.MiniMapAndCameraActive);
                 if (Utils.Scene.IsFadeOutOK)
                     yield return StartCoroutine(Singleton<Scene>.Instance.Fade(SimpleFade.Fade.Out));
-                yield return StartCoroutine(Utils.Sound.GetFadePlayerWhileNull(prevBGM, prevVolume));
+                yield return StartCoroutine(Utils.Sound.GetFadePlayerWhileNull(prevBgm, prevVolume));
                 actScene.SetProperty("shortcutKey", true);
                 actScene.SetProperty("_isInChargeBGM", false);
                 actScene.SetProperty("isEventNow", false);
@@ -342,8 +295,7 @@ namespace KK_PantyRobber
             list.Add(Program.Transfer.Create(false, Command.NullSet, "adv_ev_00_chara", "Chara"));
             list.Add(Program.Transfer.Create(false, Command.BGMPlay, "Encounter", "", "0", "", "TRUE"));
             list.Add(Program.Transfer.Create(false, Command.CameraLock, "TRUE"));
-            list.Add(Program.Transfer.Create(true, Command.CharaMobCreate, "0", "custom/presets_f_00.unity3d",
-                "ill_Default_Female"));
+            list.Add(Program.Transfer.Create(true, Command.CharaMobCreate, "0", "custom/presets_f_00.unity3d", "ill_Default_Female"));
             list.Add(Program.Transfer.Create(false, Command.CharaActive, "0", "FALSE", "center"));
             list.Add(Program.Transfer.Create(false, Command.Fade, "out", ".5", "white", "back", "TRUE"));
             list.Add(Program.Transfer.Voice("0", "sound/data/pcm/c08/adm/00.unity3d", "adm_03_08_004"));
@@ -370,8 +322,7 @@ namespace KK_PantyRobber
             list.Add(Program.Transfer.Voice("0", "sound/data/pcm/c08/adm/00.unity3d", "adm_03_08_015"));
             list.Add(Program.Transfer.Text("ちかりん", "「この学園にコイカツ部を創設した貴方には……『スティール』、女の子の着けているショーツを強奪する呪文を与えましょう……」"));
             list.Add(Program.Transfer.Text("[P名]", "（呪文って……この娘、頭大丈夫なのかな……）"));
-            list.Add(Program.Transfer.Create(true, Command.SE2DPlay, "sound/data/systemse/00.unity3d", "sse_00_04", "0",
-                "0", "TRUE", "TRUE", "-1", "FALSE", "FALSE"));
+            list.Add(Program.Transfer.Create(true, Command.SE2DPlay, "sound/data/systemse/00.unity3d", "sse_00_04", "0", "0", "TRUE", "TRUE", "-1", "FALSE", "FALSE"));
             list.Add(Program.Transfer.Create(false, Command.CharaActive, "0", "FALSE", "center"));
             list.Add(Program.Transfer.Text("[P名]", "「ええ！？ き……消えた……？ 本当に女神様……？」"));
             list.Add(Program.Transfer.Voice("0", "sound/data/pcm/c08/adm/00.unity3d", "adm_01_08_011"));
@@ -383,7 +334,7 @@ namespace KK_PantyRobber
             return list;
         }
 
-        private List<Program.Transfer> SpawnLevel1(SaveData.Player player)
+        private List<Program.Transfer> SpawnLevel1(SaveData.Player player) //todo
         {
             var list = new List<Program.Transfer>();
             Program.SetParam(player, list);
@@ -397,25 +348,18 @@ namespace KK_PantyRobber
             list.Add(Program.Transfer.Create(false, Command.ImageLoad, "adv/fade01.unity3d", "041", "", "TRUE"));
             list.Add(Program.Transfer.Create(false, Command.Fade, "in", "0", "black", "", "TRUE"));
             list.Add(Program.Transfer.Create(false, Command.NullLoad, "12", "保健室"));
-            list.Add(Program.Transfer.Create(false, Command.EventCGSetting, "adv/eventcg/12.unity3d",
-                "Health_HCamera_00"));
+            list.Add(Program.Transfer.Create(false, Command.EventCGSetting, "adv/eventcg/12.unity3d", "Health_HCamera_00"));
             list.Add(Program.Transfer.Create(false, Command.NullSet, "Health_HChara_00", "Chara"));
-            list.Add(Program.Transfer.Create(true, Command.CharaMobCreate, "0", "custom/presets_f_00.unity3d",
-                "ill_Default_Female"));
+            list.Add(Program.Transfer.Create(true, Command.CharaMobCreate, "0", "custom/presets_f_00.unity3d", "ill_Default_Female"));
             list.Add(Program.Transfer.Create(false, Command.CharaCoordinate, "0", "Pajamas"));
             list.Add(Program.Transfer.Create(false, Command.CharaMotionIKSetPartner, "0", "-1"));
             list.Add(Program.Transfer.Create(false, Command.CharaMotionIKSetPartner, "-1", "0"));
-            list.Add(Program.Transfer.Create(false, Command.CharaMotion, "0", "WLoop", "h/anim/female/01_00_00.unity3d",
-                "khh_f_base", "h/list/00_00.unity3d", "khh_f_08", "h/list/00_00.unity3d", "yure_khh_08_00",
-                "h/anim/female/01_00_00.unity3d", "khh_f_08", "", "-1", "WLoop", "h/anim/male/01_00_00.unity3d",
-                "khh_m_base", "h/list/00_00.unity3d", "khh_m_08", "", "", "h/anim/male/01_00_00.unity3d", "khh_m_08"));
-            list.Add(Program.Transfer.Create(false, Command.CharaVoicePlay, "0", "Normal",
-                "sound/data/pcm/c08/h/00_00.unity3d", "h_ko_08_00_037", "0", "0", "TRUE", "TRUE", "", "", "FALSE"));
+            list.Add(Program.Transfer.Create(false, Command.CharaMotion, "0", "WLoop", "h/anim/female/01_00_00.unity3d", "khh_f_base", "h/list/00_00.unity3d", "khh_f_08", "h/list/00_00.unity3d", "yure_khh_08_00", "h/anim/female/01_00_00.unity3d", "khh_f_08", "", "-1", "WLoop", "h/anim/male/01_00_00.unity3d", "khh_m_base", "h/list/00_00.unity3d", "khh_m_08", "", "", "h/anim/male/01_00_00.unity3d", "khh_m_08"));
+            list.Add(Program.Transfer.Create(false, Command.CharaVoicePlay, "0", "Normal", "sound/data/pcm/c08/h/00_00.unity3d", "h_ko_08_00_037", "0", "0", "TRUE", "TRUE", "", "", "FALSE"));
             list.Add(Program.Transfer.Create(false, Command.CharaGetShape, "0", "HEIGHT", "0"));
             list.Add(Program.Transfer.Create(false, Command.CharaMotionSetParam, "0", "height", "HEIGHT"));
             list.Add(Program.Transfer.Create(false, Command.CharaMotionSetParam, "-1", "height", "HEIGHT"));
-            list.Add(Program.Transfer.Create(false, Command.LookAtDankonAdd, "0", "h/list/", "dan_khh_08",
-                "cm_J_dan101_00", "cm_J_dan109_00", "cm_J_dan100_00"));
+            list.Add(Program.Transfer.Create(false, Command.LookAtDankonAdd, "0", "h/list/", "dan_khh_08", "cm_J_dan101_00", "cm_J_dan109_00", "cm_J_dan100_00"));
             list.Add(Program.Transfer.Create(false, Command.HMotionShakeAdd));
             list.Add(Program.Transfer.Create(false, Command.CharaLookNeck, "0", "3", "1"));
             list.Add(Program.Transfer.Create(false, Command.CharaLookNeck, "-1", "3", "1"));
@@ -434,15 +378,12 @@ namespace KK_PantyRobber
             list.Add(Program.Transfer.Create(false, Command.CharaVoiceStop, "0"));
             list.Add(Program.Transfer.Create(true, Command.CrossFade, "1"));
             list.Add(Program.Transfer.Create(true, Command.CharaFixMouth, "0", "FALSE"));
-            list.Add(Program.Transfer.Create(true, Command.CharaMotion, "0", "Stop_Idle", "", "", "", "", "", "", "",
-                "", "", "-1", "Stop_Idle"));
+            list.Add(Program.Transfer.Create(true, Command.CharaMotion, "0", "Stop_Idle", "", "", "", "", "", "", "", "", "", "-1", "Stop_Idle"));
             list.Add(Program.Transfer.Create(false, Command.CharaExpression, "0", "笑顔"));
-            list.Add(Program.Transfer.Create(true, Command.Voice, "0", "sound/data/pcm/c00/adm/00.unity3d",
-                "adm_00_00_010"));
+            list.Add(Program.Transfer.Create(true, Command.Voice, "0", "sound/data/pcm/c00/adm/00.unity3d", "adm_00_00_010"));
             list.Add(Program.Transfer.Create(false, Command.Text, "[ちかりん]", "「おはよ♡\u3000ぐっすり寝てたわね」"));
             list.Add(Program.Transfer.Create(false, Command.Text, "[P名]", "「あの、ちかりんさんは何をして……？」"));
-            list.Add(Program.Transfer.Create(true, Command.Voice, "0", "sound/data/pcm/c00/h/00_00.unity3d",
-                "h_hh_-1_02_001"));
+            list.Add(Program.Transfer.Create(true, Command.Voice, "0", "sound/data/pcm/c00/h/00_00.unity3d", "h_hh_-1_02_001"));
             list.Add(Program.Transfer.Create(false, Command.Text, "[H名]", "「ふふっ、お疲れみたいだから、ちかりんがたっぷり尽くしてあげるわ」"));
             list.Add(Program.Transfer.Create(false, Command.CharaLookNeck, "0", "0", "1"));
             list.Add(Program.Transfer.Create(false, Command.CharaLookEyes, "0", "0"));
@@ -456,7 +397,7 @@ namespace KK_PantyRobber
 
         private void LateUpdate()
         {
-            if (_isDuringHScene || StudioAPI.InsideStudio || MakerAPI.InsideMaker) return;
+            if (GameAPI.InsideHScene || StudioAPI.InsideStudio || MakerAPI.InsideMaker) return;
 
             if (ResetKey.Value.IsDown())
             {
@@ -579,10 +520,7 @@ namespace KK_PantyRobber
                 var info = listInfo.GetInfo(ChaListDefine.KeyType.ThumbAB);
                 var info2 = listInfo.GetInfo(ChaListDefine.KeyType.ThumbTex);
                 var texture2D = CommonLib.LoadAsset<Texture2D>(info, info2, false, string.Empty);
-                Wipe.DisplayCutIn(Wipe.CutInMode.Back2Front, new Texture2D[1]
-                {
-                    texture2D
-                }, 0f, 0f, 0f, 0f, 20f);
+                Wipe.DisplayCutIn(Wipe.CutInMode.Back2Front, new[] { texture2D }, 0f, 0f, 0f, 0f, 20f);
             }
             catch (Exception arg)
             {
@@ -596,15 +534,11 @@ namespace KK_PantyRobber
                     if (i == coordinateType) continue;
                     if (DefaultOtherSteal == DefaultOtherSteal_EN.SamePantiesOnly)
                     {
-                        var id3 = currentVisibleGirl.charFile.coordinate[i].clothes.parts[num].id;
-                        var baseColor2 = currentVisibleGirl.charFile.coordinate[i].clothes.parts[num].colorInfo[0]
-                            .baseColor;
-                        var pattern2 = currentVisibleGirl.charFile.coordinate[i].clothes.parts[num].colorInfo[0]
-                            .pattern;
-                        var patternColor2 = currentVisibleGirl.charFile.coordinate[i].clothes.parts[num].colorInfo[0]
-                            .patternColor;
-                        if (id != id3 || baseColor != baseColor2 || pattern != pattern2 ||
-                            patternColor != patternColor2) continue;
+                        var clothesPart = currentVisibleGirl.charFile.coordinate[i].clothes.parts[num];
+                        var baseColor2 = clothesPart.colorInfo[0].baseColor;
+                        var pattern2 = clothesPart.colorInfo[0].pattern;
+                        var patternColor2 = clothesPart.colorInfo[0].patternColor;
+                        if (id != clothesPart.id || baseColor != baseColor2 || pattern != pattern2 || patternColor != patternColor2) continue;
                     }
 
                     Uty.ApplyNoPanty(currentVisibleGirl, i, false);
@@ -621,7 +555,7 @@ namespace KK_PantyRobber
             }
 
             Uty.ApplyNoPanty(currentVisibleGirl);
-            PantyRobberGameController._NoPantyChara.Add(currentVisibleGirl);
+            _noPantyChara.Add(currentVisibleGirl);
             if (GirlReaction.Value) Uty.TouchMuneL(talkScene);
             if (playerController.Data.StealLevel == 0) StartCoroutine(TalkLevel());
             playerController.Data.StealLevel++;
@@ -721,13 +655,10 @@ namespace KK_PantyRobber
                 var subtitle = new GameObject(text);
                 var subtitleText = InitCaption(subtitle, levelColor, fsize);
                 subtitleText.text = text;
-                var BlinkColor = ColorUtility.TryParseHtmlString("#00000000", out co) ? co : Color.black;
+                var blinkColor = ColorUtility.TryParseHtmlString("#00000000", out co) ? co : Color.black;
                 for (var i = 0; i < 12; i++)
                 {
-                    if (i % 2 == 0)
-                        subtitleText.color = levelColor;
-                    else
-                        subtitleText.color = BlinkColor;
+                    subtitleText.color = i % 2 == 0 ? levelColor : blinkColor;
                     yield return new WaitForSeconds(0.25f);
                 }
 

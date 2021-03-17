@@ -17,17 +17,6 @@ namespace KK_PantyRobber
 
         internal static Utils.Sound.Setting seSet = new Utils.Sound.Setting(Manager.Sound.Type.GameSE3D);
 
-        public static SaveData.Heroine GetLeadHeroine(this HFlag hflag)
-        {
-            return hflag.lstHeroine[hflag.GetLeadHeroineId()];
-        }
-
-        public static int GetLeadHeroineId(this HFlag hflag)
-        {
-            if (hflag.mode != HFlag.EMode.houshi3P && hflag.mode != HFlag.EMode.sonyu3P) return 0;
-            return hflag.nowAnimationInfo.id % 2;
-        }
-
         public static SaveData.Heroine GetCurrentVisibleGirl()
         {
             if (!Singleton<Game>.IsInstance()) return null;
@@ -36,7 +25,7 @@ namespace KK_PantyRobber
                 var advScene = Singleton<Game>.Instance.actScene.AdvScene;
                 if (advScene.Scenario?.currentHeroine != null) return advScene.Scenario.currentHeroine;
                 TalkScene talkScene;
-                if ((object) (talkScene = advScene.nowScene as TalkScene) != null && talkScene.targetHeroine != null)
+                if ((object)(talkScene = advScene.nowScene as TalkScene) != null && talkScene.targetHeroine != null)
                     return talkScene.targetHeroine;
             }
 
@@ -95,12 +84,10 @@ namespace KK_PantyRobber
             if (talkScene == null) return null;
             var list = new List<Program.Transfer>();
             Program.SetParam(player, girl, list);
-            var files = Directory.GetFiles(Path.Combine(Paths.GameRootPath, "abdata\\adv\\scenario\\" + girl.ChaName),
-                "??.unity3d");
+            var files = Directory.GetFiles(Path.Combine(Paths.GameRootPath, "abdata\\adv\\scenario\\" + girl.ChaName), "??.unity3d");
             foreach (var path in files)
             {
-                var assetBundleLoadAssetOperation = AssetBundleManager.LoadAsset(
-                    "adv/scenario/" + girl.ChaName + "/" + Path.GetFileName(path), asset, typeof(ScenarioData));
+                var assetBundleLoadAssetOperation = AssetBundleManager.LoadAsset("adv/scenario/" + girl.ChaName + "/" + Path.GetFileName(path), asset, typeof(ScenarioData));
                 if (assetBundleLoadAssetOperation == null) continue;
                 var asset2 = assetBundleLoadAssetOperation.GetAsset<ScenarioData>();
                 if (asset2 == null || asset2.list == null || asset2.list.Count == 0) continue;
@@ -134,7 +121,7 @@ namespace KK_PantyRobber
 
         public static Info GetInfo(TalkScene talkScene)
         {
-            return (Info) typeof(TalkScene).InvokeMember("info",
+            return (Info)typeof(TalkScene).InvokeMember("info",
                 BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.InvokeMethod, null, talkScene, null);
         }
 
@@ -142,7 +129,7 @@ namespace KK_PantyRobber
         {
             typeof(TalkScene).InvokeMember("TouchFunc",
                 BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.InvokeMethod, null, talkScene,
-                new object[2]
+                new object[]
                 {
                     "MuneL",
                     new Vector3(0f, 0f, 0f)
@@ -153,7 +140,7 @@ namespace KK_PantyRobber
         {
             typeof(TalkScene).InvokeMember("StartADV",
                 BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.InvokeMethod, null, talkScene,
-                new object[1]
+                new object[]
                 {
                     _list
                 });
@@ -161,22 +148,22 @@ namespace KK_PantyRobber
 
         public static IEnumerator HeroineEventWait(TalkScene talkScene)
         {
-            return (IEnumerator) typeof(TalkScene).InvokeMember("HeroineEventWait",
+            return (IEnumerator)typeof(TalkScene).InvokeMember("HeroineEventWait",
                 BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.InvokeMethod, null, talkScene, null);
         }
 
         public static IEnumerator TalkEnd(TalkScene talkScene)
         {
-            return (IEnumerator) typeof(TalkScene).InvokeMember("TalkEnd",
+            return (IEnumerator)typeof(TalkScene).InvokeMember("TalkEnd",
                 BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.InvokeMethod, null, talkScene, null);
         }
 
         public static Texture2D GetTexture(ChaControl chaControl, ChaListDefine.CategoryNo type, int id,
             ChaListDefine.KeyType assetBundleKey, ChaListDefine.KeyType assetKey, string addStr = "")
         {
-            return (Texture2D) typeof(ChaControl).InvokeMember("GetTexture",
+            return (Texture2D)typeof(ChaControl).InvokeMember("GetTexture",
                 BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.InvokeMethod, null, chaControl,
-                new object[5]
+                new object[]
                 {
                     type,
                     id,
@@ -189,9 +176,9 @@ namespace KK_PantyRobber
         public static void ApplyNoPanty(SaveData.Heroine girl, int coodType, bool restore = true)
         {
             var coordinateType = girl.chaCtrl.fileStatus.coordinateType;
-            PantyRobber.Log($"ApplyNoPanty={girl.Name} coodType={(ChaFileDefine.CoordinateType) coodType}");
+            PantyRobber.Log($"ApplyNoPanty={girl.Name} coodType={(ChaFileDefine.CoordinateType)coodType}");
             if (coodType != coordinateType)
-                girl.chaCtrl.ChangeCoordinateTypeAndReload((ChaFileDefine.CoordinateType) coodType, false);
+                girl.chaCtrl.ChangeCoordinateTypeAndReload((ChaFileDefine.CoordinateType)coodType, false);
             girl.charFile.coordinate[coodType].clothes.parts[panty].id = 0;
             var data = girl.charFile.coordinate[coodType].SaveBytes();
             girl.chaCtrl.nowCoordinate.LoadBytes(data, ChaFileDefine.ChaFileCoordinateVersion);
@@ -201,7 +188,7 @@ namespace KK_PantyRobber
             girl.chaCtrl.chaFile.coordinate[coodType].clothes.parts[panty].id = 0;
             girl.chaCtrl.nowCoordinate.clothes.parts[panty].id = 0;
             if (restore)
-                girl.chaCtrl.ChangeCoordinateTypeAndReload((ChaFileDefine.CoordinateType) coordinateType, false);
+                girl.chaCtrl.ChangeCoordinateTypeAndReload((ChaFileDefine.CoordinateType)coordinateType, false);
         }
 
         public static void ApplyNoPanty(SaveData.Heroine girl)
@@ -223,10 +210,10 @@ namespace KK_PantyRobber
             seSet.assetBundleName = asset;
             seSet.assetName = file;
             var transform = Utils.Sound.Play(seSet);
-            if ((bool) cha)
+            if (cha && transform)
             {
                 var referenceInfo = cha.GetReferenceInfo(reference);
-                if ((bool) transform && (bool) referenceInfo) transform.SetParent(referenceInfo.transform, false);
+                if (referenceInfo) transform.SetParent(referenceInfo.transform, false);
             }
         }
 
@@ -237,23 +224,6 @@ namespace KK_PantyRobber
             if (fPercent == 100f && num == fPercent) return true;
             if (num < fPercent) return true;
             return false;
-        }
-
-        public static PantyRobberGameController GetGameController()
-        {
-            return Object.FindObjectOfType<PantyRobberGameController>();
-        }
-
-        public static ChaControl GetController(SaveData.Player player)
-        {
-            if (!(player?.chaCtrl != null)) return null;
-            return player.chaCtrl.GetComponent<ChaControl>();
-        }
-
-        public static ChaControl GetController(SaveData.Heroine heroine)
-        {
-            if (!(heroine?.chaCtrl != null)) return null;
-            return heroine.chaCtrl.GetComponent<ChaControl>();
         }
     }
 }

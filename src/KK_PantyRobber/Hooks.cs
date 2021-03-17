@@ -24,9 +24,7 @@ namespace KK_PantyRobber
         }
 
         [HarmonyPostfix]
-        [HarmonyPatch(typeof(Scene), "UnLoad", new Type[]
-        {
-        })]
+        [HarmonyPatch(typeof(Scene), "UnLoad", new Type[] { })]
         public static void PostSceneUnloadHook()
         {
             try
@@ -36,7 +34,7 @@ namespace KK_PantyRobber
                 if (currentVisibleGirl != null)
                 {
                     var chaCtrl = currentVisibleGirl.chaCtrl;
-                    if (chaCtrl != null) Uty.GetGameController()?.OnSceneUnload(currentVisibleGirl, chaCtrl);
+                    if (chaCtrl != null) PantyRobber.Instance.OnSceneUnload(currentVisibleGirl, chaCtrl);
                 }
             }
             catch (Exception ex)

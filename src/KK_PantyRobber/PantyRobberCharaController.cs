@@ -21,10 +21,7 @@ namespace KK_PantyRobber
 
         public void SaveData()
         {
-            if (ChaControl.sex == 0)
-                ExtendedSave.SetExtendedDataById(ChaFileControl, PantyRobber.GUID, Data.Save());
-            else
-                ExtendedSave.SetExtendedDataById(ChaFileControl, PantyRobber.GUID, null);
+            ExtendedSave.SetExtendedDataById(ChaFileControl, PantyRobber.GUID, ChaControl.sex == 0 ? Data.Save() : null);
         }
 
         protected override void OnCardBeingSaved(GameMode currentGameMode)
@@ -34,9 +31,7 @@ namespace KK_PantyRobber
 
         protected override void OnReload(GameMode currentGameMode)
         {
-            //IL_0000: Unknown result type (might be due to invalid IL or missing references)
-            //IL_0002: Invalid comparison between Unknown and I4
-            if ((int) currentGameMode == 3 && ChaControl.sex == 0) ReadData();
+            if (currentGameMode == GameMode.MainGame && ChaControl.sex == 0) ReadData();
         }
     }
 }
