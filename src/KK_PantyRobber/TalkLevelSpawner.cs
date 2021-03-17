@@ -387,7 +387,7 @@ namespace KK_PantyRobber
                 PantyRobber.Log($"GetTexture err={arg}");
             }
 
-            if (PantyRobber.DefaultOtherSteal != 0)
+            if (PantyRobber.DefaultOtherSteal != PantyRobber.DefaultOtherSteal_EN.DoNotSteal)
             {
                 var currentColor = coordPart.colorInfo[0].baseColor;
                 var currentPattern = coordPart.colorInfo[0].pattern;
