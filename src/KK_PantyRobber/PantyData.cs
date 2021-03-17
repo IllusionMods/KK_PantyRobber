@@ -12,7 +12,7 @@ namespace KK_PantyRobber
             if (data?.data == null) return new PantyData();
             foreach (var item in data.data) PantyRobber.Log($"- {item.Key}={item.Value}");
             var pantyData = new PantyData();
-            if (data.data.TryGetValue("StealLevel", out var value)) pantyData.StealLevel = (int) value;
+            if (data.data.TryGetValue(nameof(StealLevel), out var value)) pantyData.StealLevel = (int) value;
             return pantyData;
         }
 
@@ -20,7 +20,7 @@ namespace KK_PantyRobber
         {
             var val = new PluginData();
             val.version = 1;
-            val.data["StealLevel"] = StealLevel;
+            val.data[nameof(StealLevel)] = StealLevel;
             return val;
         }
     }

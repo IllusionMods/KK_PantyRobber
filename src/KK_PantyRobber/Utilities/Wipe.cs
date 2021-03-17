@@ -7,7 +7,7 @@ using Object = UnityEngine.Object;
 
 namespace KK_PantyRobber
 {
-    public class Wipe
+    internal class Wipe
     {
         public enum CutInMode
         {
