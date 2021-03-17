@@ -78,6 +78,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="TalkLevelSpawner.cs" />
     <Compile Include="Utilities\Caption.cs" />
     <Compile Include="Utilities\Extensions.cs" />
     <Compile Include="Hooks.cs" />
